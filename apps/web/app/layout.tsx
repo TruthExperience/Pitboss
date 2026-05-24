@@ -1,6 +1,9 @@
 import "./globals.css";
 import type { ReactNode } from "react";
 
+import AuthProvider from "@/components/AuthProvider";
+import HeartbeatIndicator from "@/components/HeartbeatIndicator";
+
 export const metadata = {
   title: "PitBossOS",
   description: "Unified League Operating System for racing leagues"
@@ -10,7 +13,10 @@ export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en">
       <body className="bg-black text-white">
-        {children}
+        <AuthProvider>
+          {children}
+          <HeartbeatIndicator />
+        </AuthProvider>
 
         {/* Service Worker Registration */}
         <script
@@ -20,6 +26,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
                 window.addEventListener("load", () => {
                   navigator.serviceWorker
                     .register("/sw.js")
+                    .then(() => console.log("Service Worker registered"))
                     .catch(err => console.error("SW registration failed:", err));
                 });
               }
