@@ -1,62 +1,7 @@
-# ---------------------------------------------------------
-# PitBossOS Monorepo .gitignore
-# Next.js + Express + Turborepo + TypeScript
-# ---------------------------------------------------------
-
-# Node
-node_modules/
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-pnpm-debug.log*
-
-# Turborepo
-turbo/
-.cache/
-
-# Build output
-dist/
-build/
-.next/
-out/
-coverage/
-
-# Logs
-logs/
-*.log
-*.log.*
-
-# OS junk
-.DS_Store
-Thumbs.db
-
-# Env files (root + apps)
+node_modules
+.next
+dist
 .env
-.env.*
-apps/web/.env.local
-apps/web/.env.development
-apps/web/.env.production
-apps/api/.env
-apps/api/.env.local
-
-# TypeScript
-*.tsbuildinfo
-
-# Next.js
-.next/
-out/
-.vercel/
-
-# Express build output
-apps/api/dist/
-
-# IDE files
-.vscode/
-.idea/
-*.swp
-*.swo
-
-# Lockfiles (optional — uncomment if you want a single lockfile)
-# package-lock.json
-# yarn.lock
-# pnpm-lock.yaml
+.env.local
+.DS_Store
+.vercel
