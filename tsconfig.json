@@ -1,10 +1,16 @@
 {
   "compilerOptions": {
+    "target": "ES2020",
+    "module": "ESNext",
+    "moduleResolution": "Node",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
     "baseUrl": ".",
     "paths": {
-      "@core/*": ["packages/core/src/*"],
-      "@engines/*": ["packages/engines/src/*"],
-      "@db/*": ["packages/db/src/*"]
+      "@pitboss/core/*": ["packages/core/src/*"],
+      "@pitboss/db/*": ["packages/db/src/*"]
     }
   }
 }
