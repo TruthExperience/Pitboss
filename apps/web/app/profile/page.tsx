@@ -1,48 +1,138 @@
 "use client";
 
-import { Card } from "@/components/ui/card";
+import { useEffect, useState, useContext } from "react";
+import { supabase } from "@/lib/supabaseClient";
+import { AuthContext } from "@/components/AuthProvider";
+import Nav from "@/components/Nav";
 
 export default function ProfilePage() {
-  // Mock data for now — replace with real API calls later
-  const mockProfile = {
-    name: "Test Driver",
-    division: "F2",
-    team: "Independent",
-    certifications: ["Bronze Racecraft", "Flag Rules Level 1"],
-    examsTaken: 12,
-    advisorSessions: 8,
-    telemetryUploads: 5,
-  };
+  const session = useContext(AuthContext);
+  const [driver, setDriver] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+
+  const [name, setName] = useState("");
+  const [bio, setBio] = useState("");
+
+  useEffect(() => {
+    if (!session) return;
+
+    async function loadDriver() {
+      const { data, error } = await supabase
+        .from("drivers")
+        .select("*")
+        .eq("auth_id", session.user.id)
+        .single();
+
+      if (!error && data) {
+        setDriver(data);
+        setName(data.name || "");
+        setBio(data.bio || "");
+      }
+
+      setLoading(false);
+    }
+
+    loadDriver();
+  }, [session]);
+
+  async function saveProfile() {
+    if (!driver) return;
+
+    setSaving(true);
+
+    await supabase
+      .from("drivers")
+      .update({
+        name,
+        bio
+      })
+      .eq("id", driver.id);
+
+    setSaving(false);
+  }
+
+  if (!session) {
+    return (
+      <div className="p-8 text-center">
+        <h1 className="text-3xl font-bold">Please log in</h1>
+      </div>
+    );
+  }
+
+  if (loading) {
+    return (
+      <div className="p-8 text-center">
+        <p className="text-neutral-400">Loading profile...</p>
+      </div>
+    );
+  }
 
   return (
-    <div className="space-y-8">
-      <h1 className="text-3xl font-bold">Driver Profile</h1>
+    <>
+      <Nav />
 
-      {/* Basic Info */}
-      <Card className="p-6 bg-neutral-900 border-neutral-700 space-y-2">
-        <h2 className="text-xl font-semibold">Basic Information</h2>
-        <p><span className="font-medium">Name:</span> {mockProfile.name}</p>
-        <p><span className="font-medium">Division:</span> {mockProfile.division}</p>
-        <p><span className="font-medium">Team:</span> {mockProfile.team}</p>
-      </Card>
+      <div className="p-8 max-w-2xl mx-auto space-y-8">
+        <h1 className="text-4xl font-bold">Your Profile</h1>
 
-      {/* Certifications */}
-      <Card className="p-6 bg-neutral-900 border-neutral-700 space-y-4">
-        <h2 className="text-xl font-semibold">Certifications</h2>
-        <ul className="list-disc ml-6">
-          {mockProfile.certifications.map((cert, i) => (
-            <li key={i}>{cert}</li>
-          ))}
-        </ul>
-      </Card>
+        {!driver ? (
+          <p className="text-red-400">
+            No driver profile found. Contact an admin.
+          </p>
+        ) : (
+          <>
+            <div className="bg-neutral-900 border border-neutral-700 p-6 rounded space-y-4">
+              <label className="block">
+                <span className="text-neutral-300">Name</span>
+                <input
+                  className="bg-neutral-800 border border-neutral-700 p-3 rounded w-full mt-1 text-white"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                />
+              </label>
 
-      {/* Activity Summary */}
-      <Card className="p-6 bg-neutral-900 border-neutral-700 space-y-4">
-        <h2 className="text-xl font-semibold">Activity Summary</h2>
-        <p><span className="font-medium">Exams Taken:</span> {mockProfile.examsTaken}</p>
-        <p><span className="font-medium">Advisor Sessions:</span> {mockProfile.advisorSessions}</p>
-        <p><span className="font-medium">Telemetry Uploads:</span> {mockProfile.telemetryUploads}</p>
-      </Card>
-    </div>
+              <label className="block">
+                <span className="text-neutral-300">Bio</span>
+                <textarea
+                  className="bg-neutral-800 border border-neutral-700 p-3 rounded w-full mt-1 text-white h-28"
+                  value={bio}
+                  onChange={(e) => setBio(e.target.value)}
+                />
+              </label>
+
+              <button
+                onClick={saveProfile}
+                disabled={saving}
+                className="bg-blue-600 hover:bg-blue-500 px-4 py-2 rounded transition disabled:opacity-50"
+              >
+                {saving ? "Saving..." : "Save Changes"}
+              </button>
+            </div>
+
+            <div className="bg-neutral-900 border border-neutral-700 p-6 rounded">
+              <h2 className="text-xl font-semibold mb-3">Driver Stats</h2>
+              <p className="text-neutral-400">
+                License Level:{" "}
+                <span className="text-white font-semibold">
+                  {driver.license_level}
+                </span>
+              </p>
+              <p className="text-neutral-400">
+                Exams Passed:{" "}
+                <span className="text-white font-semibold">
+                  {driver.exams_passed}
+                </span>
+              </p>
+              <p className="text-neutral-400">
+                Advisor Score:{" "}
+                <span className="text-white font-semibold">
+                  {driver.advisor_score}
+                </span>
+              </p>
+            </div>
+          </>
+        )}
+      </div>
+    </>
   );
 }
