@@ -1,15 +1,31 @@
 import "./globals.css";
-import { ReactNode } from "react";
-import { Nav } from "../components/Nav";
+import type { ReactNode } from "react";
+
+export const metadata = {
+  title: "PitBossOS",
+  description: "Unified League Operating System for racing leagues"
+};
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en">
-      <body className="min-h-screen bg-neutral-950 text-white">
-        <main className="max-w-5xl mx-auto py-10 px-6">
-          <Nav />
-          {children}
-        </main>
+      <body className="bg-black text-white">
+        {children}
+
+        {/* Service Worker Registration */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              if ("serviceWorker" in navigator) {
+                window.addEventListener("load", () => {
+                  navigator.serviceWorker
+                    .register("/sw.js")
+                    .catch(err => console.error("SW registration failed:", err));
+                });
+              }
+            `,
+          }}
+        />
       </body>
     </html>
   );
