@@ -18,7 +18,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
           <HeartbeatIndicator />
         </AuthProvider>
 
-        {/* Service Worker Registration */}
+        {/* Register Service Worker */}
         <script
           dangerouslySetInnerHTML={{
             __html: `
@@ -26,11 +26,10 @@ export default function RootLayout({ children }: { children: ReactNode }) {
                 window.addEventListener("load", () => {
                   navigator.serviceWorker
                     .register("/sw.js")
-                    .then(() => console.log("Service Worker registered"))
                     .catch(err => console.error("SW registration failed:", err));
                 });
               }
-            `,
+            `
           }}
         />
       </body>
