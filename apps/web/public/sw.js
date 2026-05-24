@@ -1,12 +1,6 @@
-// -------------------------------
-// PITBOSSOS SERVICE WORKER v1
-// Offline caching + request queue
-// -------------------------------
-
 const CACHE_NAME = "pitboss-cache-v1";
 const API_QUEUE = "pitboss-api-queue";
 
-// Shell files to cache
 const SHELL = [
   "/",
   "/manifest.json",
@@ -14,7 +8,7 @@ const SHELL = [
   "/icon-512.png"
 ];
 
-// Install — cache shell
+// Install: cache shell
 self.addEventListener("install", (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => cache.addAll(SHELL))
@@ -22,14 +16,14 @@ self.addEventListener("install", (event) => {
   self.skipWaiting();
 });
 
-// Activate — cleanup old caches
+// Activate: clean old caches
 self.addEventListener("activate", (event) => {
   event.waitUntil(
     caches.keys().then((keys) =>
       Promise.all(
         keys
-          .filter((key) => key !== CACHE_NAME)
-          .map((key) => caches.delete(key))
+          .filter((k) => k !== CACHE_NAME)
+          .map((k) => caches.delete(k))
       )
     )
   );
@@ -40,7 +34,7 @@ self.addEventListener("activate", (event) => {
 self.addEventListener("fetch", (event) => {
   const req = event.request;
 
-  // Only intercept POST requests to API
+  // Offline queue for POST API calls
   const isAPI =
     req.method === "POST" &&
     req.url.startsWith("http://localhost:4000");
@@ -50,7 +44,7 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  // For GET requests → cache-first
+  // Cache-first for everything else
   event.respondWith(
     caches.match(req).then((cached) => {
       return (
@@ -64,11 +58,9 @@ self.addEventListener("fetch", (event) => {
 // Handle POST requests offline
 async function handleAPIRequest(req) {
   try {
-    // Try sending to API normally
     const res = await fetch(req.clone());
     return res;
   } catch (err) {
-    // If offline → queue request
     const body = await req.clone().json();
     const db = await openQueueDB();
     const tx = db.transaction(API_QUEUE, "readwrite");
@@ -78,7 +70,6 @@ async function handleAPIRequest(req) {
       timestamp: Date.now()
     });
 
-    // Register background sync
     if ("sync" in self.registration) {
       self.registration.sync.register("pitboss-sync");
     }
@@ -94,7 +85,7 @@ async function handleAPIRequest(req) {
   }
 }
 
-// Background sync handler
+// Background sync
 self.addEventListener("sync", (event) => {
   if (event.tag === "pitboss-sync") {
     event.waitUntil(flushQueue());
@@ -108,7 +99,6 @@ async function flushQueue() {
   const store = tx.store;
 
   let cursor = await store.openCursor();
-
   while (cursor) {
     const { url, body } = cursor.value;
 
@@ -119,11 +109,9 @@ async function flushQueue() {
         body: JSON.stringify(body)
       });
 
-      // Remove from queue
       await cursor.delete();
     } catch (err) {
-      // Stop if still offline
-      return;
+      return; // stop if still offline
     }
 
     cursor = await cursor.continue();
