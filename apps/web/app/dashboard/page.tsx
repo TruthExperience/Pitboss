@@ -1,12 +1,13 @@
 "use client";
 
-import { useEffect, useState, useContext } from "react";
+import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
-import { AuthContext } from "@/components/AuthProvider";
+import { useAuth } from "@/hooks/useAuth";
 import Nav from "@/components/Nav";
 
 export default function DashboardPage() {
-  const session = useContext(AuthContext);
+  const { session, loading: authLoading, isAuthenticated } = useAuth();
+
   const [driver, setDriver] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
@@ -27,7 +28,17 @@ export default function DashboardPage() {
     loadDriver();
   }, [session]);
 
-  if (!session) {
+  // Auth still loading
+  if (authLoading) {
+    return (
+      <div className="p-8 text-center">
+        <p className="text-neutral-400">Loading...</p>
+      </div>
+    );
+  }
+
+  // Not logged in
+  if (!isAuthenticated) {
     return (
       <div className="p-8 text-center">
         <h1 className="text-3xl font-bold">Please log in</h1>
@@ -35,6 +46,7 @@ export default function DashboardPage() {
     );
   }
 
+  // Driver loading
   if (loading) {
     return (
       <div className="p-8 text-center">
@@ -60,18 +72,21 @@ export default function DashboardPage() {
               <h2 className="text-2xl font-semibold mb-2">
                 Welcome, {driver.name}
               </h2>
+
               <p className="text-neutral-400">
                 License Level:{" "}
                 <span className="text-white font-semibold">
                   {driver.license_level}
                 </span>
               </p>
+
               <p className="text-neutral-400">
                 Exams Passed:{" "}
                 <span className="text-white font-semibold">
                   {driver.exams_passed}
                 </span>
               </p>
+
               <p className="text-neutral-400">
                 Advisor Score:{" "}
                 <span className="text-white font-semibold">
