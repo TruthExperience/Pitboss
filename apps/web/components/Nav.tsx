@@ -3,12 +3,11 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
-import { useContext } from "react";
-import { AuthContext } from "@/components/AuthProvider";
+import { useAuth } from "@/hooks/useAuth";
 
 export default function Nav() {
   const pathname = usePathname();
-  const session = useContext(AuthContext);
+  const { session, isAuthenticated } = useAuth();
 
   const linkClass = (path: string) =>
     pathname === path
@@ -34,7 +33,7 @@ export default function Nav() {
           Profile
         </Link>
 
-        {session && (
+        {isAuthenticated && (
           <Link href="/admin" className={linkClass("/admin")}>
             Admin
           </Link>
@@ -42,7 +41,7 @@ export default function Nav() {
       </div>
 
       <div className="flex items-center gap-4">
-        {!session ? (
+        {!isAuthenticated ? (
           <Link
             href="/login"
             className="text-neutral-300 hover:text-white transition"
