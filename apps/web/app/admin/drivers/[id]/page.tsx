@@ -9,14 +9,19 @@ export default function AdminDriverDetail() {
   const [data, setData] = useState<any>(null);
 
   useEffect(() => {
-    fetch(`http://localhost:4000/admin/drivers/${id}`)
+    fetch(`http://localhost:4000/drivers/${id}`)
       .then((res) => res.json())
       .then(setData);
   }, [id]);
 
   if (!data) return <p className="p-8">Loading...</p>;
 
-  const { driver, exams, advisor, telemetry, certs } = data;
+  const driver = data.driver;
+  const activity = data.activity ?? {};
+  const exams = data.exams ?? [];
+  const advisor = data.advisor ?? [];
+  const telemetry = data.telemetry ?? [];
+  const certs = data.certs ?? [];
 
   return (
     <div className="p-8 space-y-10">
@@ -27,7 +32,19 @@ export default function AdminDriverDetail() {
         <h2 className="text-xl font-semibold">Driver Information</h2>
         <p><span className="font-semibold">Division:</span> {driver.division}</p>
         <p><span className="font-semibold">Team:</span> {driver.team}</p>
+        <p><span className="font-semibold">License Level:</span> {driver.license_level}</p>
+        <p><span className="font-semibold">Exams Passed:</span> {driver.exams_passed}</p>
+        <p><span className="font-semibold">Advisor Score:</span> {driver.advisor_score}</p>
         <p><span className="font-semibold">Created:</span> {new Date(driver.created_at).toLocaleString()}</p>
+      </Card>
+
+      {/* ACTIVITY */}
+      <Card className="p-6 bg-neutral-900 border-neutral-700 space-y-2">
+        <h2 className="text-xl font-semibold">Driver Activity</h2>
+        <p><span className="font-semibold">Exams Taken:</span> {activity.exams_taken}</p>
+        <p><span className="font-semibold">Advisor Sessions:</span> {activity.advisor_sessions}</p>
+        <p><span className="font-semibold">Telemetry Uploads:</span> {activity.telemetry_uploads}</p>
+        <p><span className="font-semibold">Last Updated:</span> {new Date(activity.updated_at).toLocaleString()}</p>
       </Card>
 
       {/* EXAMS */}
@@ -40,7 +57,7 @@ export default function AdminDriverDetail() {
           <div key={e.id} className="border-b border-neutral-800 pb-4 mb-4">
             <p className="font-semibold">Score: {e.score}%</p>
             <p className="text-neutral-400 text-sm">
-              Weak Areas: {JSON.stringify(e.weak_areas)}
+              Weak Areas: {e.weak_areas ? JSON.stringify(e.weak_areas) : "None"}
             </p>
             <p className="text-neutral-500 text-xs">
               {new Date(e.created_at).toLocaleString()}
