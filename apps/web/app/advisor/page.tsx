@@ -1,12 +1,14 @@
 "use client";
 
 import { useState } from "react";
+import { useAuth } from "@/providers/AuthProvider";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 
 export default function AdvisorPage() {
+  const { user } = useAuth();
   const [question, setQuestion] = useState("");
   const [category, setCategory] = useState("");
   const [response, setResponse] = useState<any>(null);
@@ -17,9 +19,9 @@ export default function AdvisorPage() {
     setResponse(null);
 
     const payload = {
+      driver_id: user.id,
       question,
       category,
-      userId: "test-user",
     };
 
     const res = await fetch("http://localhost:4000/advisor/run", {
