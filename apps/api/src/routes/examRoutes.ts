@@ -37,11 +37,30 @@ export async function POST(req: Request) {
     const score = Math.round((correct / total) * 100);
     const passed = score >= 80;
 
+    // Insert exam result
+    const { data: result, error: insertError } = await supabase
+      .from("exam_results")
+      .insert({
+        driver_id: user_id,
+        score,
+        weak_areas: {}, // optional for now
+      })
+      .select()
+      .single();
+
+    if (insertError) {
+      return NextResponse.json(
+        { error: "Failed to save exam result" },
+        { status: 500 }
+      );
+    }
+
     return NextResponse.json({
       score,
       passed,
       correct,
-      incorrect: total - correct
+      incorrect: total - correct,
+      result,
     });
   } catch (err) {
     return NextResponse.json(
