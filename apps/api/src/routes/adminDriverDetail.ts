@@ -12,6 +12,12 @@ router.get("/:id", async (req, res) => {
     .eq("id", id)
     .single();
 
+  const { data: activity } = await db
+    .from("driver_activity")
+    .select("*")
+    .eq("driver_id", id)
+    .single();
+
   const { data: exams } = await db
     .from("exam_results")
     .select("*")
@@ -36,7 +42,7 @@ router.get("/:id", async (req, res) => {
     .eq("driver_id", id)
     .order("earned_at", { ascending: false });
 
-  res.json({ driver, exams, advisor, telemetry, certs });
+  res.json({ driver, activity, exams, advisor, telemetry, certs });
 });
 
 export default router;
