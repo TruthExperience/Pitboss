@@ -1,12 +1,12 @@
 "use client";
 
-import { useEffect, useState, useContext } from "react";
+import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
-import { AuthContext } from "@/components/AuthProvider";
+import { useAuth } from "@/hooks/useAuth";
 import Nav from "@/components/Nav";
 
 export default function ExamPage() {
-  const session = useContext(AuthContext);
+  const { session, loading: authLoading, isAuthenticated } = useAuth();
 
   const [questions, setQuestions] = useState<any[]>([]);
   const [index, setIndex] = useState(0);
@@ -37,7 +37,7 @@ export default function ExamPage() {
   function selectAnswer(questionId: number, choice: string) {
     setAnswers((prev: any) => ({
       ...prev,
-      [questionId]: choice
+      [questionId]: choice,
     }));
   }
 
@@ -46,12 +46,12 @@ export default function ExamPage() {
 
     const payload = {
       user_id: session.user.id,
-      answers
+      answers,
     };
 
     const res = await fetch("/api/exam/grade", {
       method: "POST",
-      body: JSON.stringify(payload)
+      body: JSON.stringify(payload),
     });
 
     const data = await res.json();
@@ -59,7 +59,17 @@ export default function ExamPage() {
     setSubmitting(false);
   }
 
-  if (!session) {
+  // Auth still loading
+  if (authLoading) {
+    return (
+      <div className="p-8 text-center">
+        <p className="text-neutral-400">Loading...</p>
+      </div>
+    );
+  }
+
+  // Not logged in
+  if (!isAuthenticated) {
     return (
       <div className="p-8 text-center">
         <h1 className="text-3xl font-bold">Please log in</h1>
@@ -67,6 +77,7 @@ export default function ExamPage() {
     );
   }
 
+  // Questions loading
   if (loading) {
     return (
       <div className="p-8 text-center">
@@ -75,6 +86,7 @@ export default function ExamPage() {
     );
   }
 
+  // Results screen
   if (result) {
     return (
       <>
