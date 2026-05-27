@@ -19,15 +19,10 @@ export default function ExamPage() {
     if (!session) return;
 
     async function loadQuestions() {
-      const { data, error } = await supabase
-        .from("exam_questions")
-        .select("*")
-        .order("id", { ascending: true });
+      const res = await fetch("http://localhost:4000/exam/questions");
+      const data = await res.json();
 
-      if (!error && data) {
-        setQuestions(data);
-      }
-
+      setQuestions(data);
       setLoading(false);
     }
 
@@ -45,12 +40,13 @@ export default function ExamPage() {
     setSubmitting(true);
 
     const payload = {
-      user_id: session.user.id,
+      driver_id: session.user.id,
       answers,
     };
 
-    const res = await fetch("/api/exam/grade", {
+    const res = await fetch("http://localhost:4000/exam/grade", {
       method: "POST",
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload),
     });
 
@@ -59,7 +55,6 @@ export default function ExamPage() {
     setSubmitting(false);
   }
 
-  // Auth still loading
   if (authLoading) {
     return (
       <div className="p-8 text-center">
@@ -68,7 +63,6 @@ export default function ExamPage() {
     );
   }
 
-  // Not logged in
   if (!isAuthenticated) {
     return (
       <div className="p-8 text-center">
@@ -77,7 +71,6 @@ export default function ExamPage() {
     );
   }
 
-  // Questions loading
   if (loading) {
     return (
       <div className="p-8 text-center">
@@ -86,7 +79,6 @@ export default function ExamPage() {
     );
   }
 
-  // Results screen
   if (result) {
     return (
       <>
