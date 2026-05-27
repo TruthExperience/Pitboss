@@ -1,34 +1,61 @@
 "use client";
 
-import { createContext, useEffect, useState } from "react";
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  ReactNode,
+} from "react";
 import { supabase } from "@/lib/supabaseClient";
+import type { Session } from "@supabase/supabase-js";
 
-export const AuthContext = createContext<any>(null);
+type AuthContextValue = {
+  session: Session | null;
+  loading: boolean;
+};
 
-export default function AuthProvider({ children }: any) {
-  const [session, setSession] = useState<any>(null);
+const AuthContext = createContext<AuthContextValue | undefined>(undefined);
+
+export function AuthProvider({ children }: { children: ReactNode }) {
+  const [session, setSession] = useState<Session | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Load initial session
+    let mounted = true;
+
+    // Initial session
     supabase.auth.getSession().then(({ data }) => {
-      setSession(data.session);
+      if (!mounted) return;
+      setSession(data.session ?? null);
+      setLoading(false);
     });
 
-    // Listen for login/logout/session refresh
-    const { data: listener } = supabase.auth.onAuthStateChange(
-      (_event, session) => {
-        setSession(session);
+    // Listen for auth changes
+    const { data: subscription } = supabase.auth.onAuthStateChange(
+      (_event, newSession) => {
+        if (!mounted) return;
+        setSession(newSession);
       }
     );
 
     return () => {
-      listener.subscription.unsubscribe();
+      mounted = false;
+      subscription?.subscription.unsubscribe();
     };
   }, []);
 
   return (
-    <AuthContext.Provider value={session}>
+    <AuthContext.Provider value={{ session, loading }}>
       {children}
     </AuthContext.Provider>
   );
+}
+
+export function useAuthContext() {
+  const ctx = useContext(AuthContext);
+  if (!ctx) {
+    throw new Error("useAuthContext must be used within an AuthProvider");
+  }
+  return ctx;
 }
