@@ -2,13 +2,15 @@
   "compilerOptions": {
     "target": "ES2020",
     "module": "ESNext",
-    "moduleResolution": "Node",
+    "moduleResolution": "bundler",
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
+
     "baseUrl": ".",
     "paths": {
+      "@/*": ["apps/web/*"],
       "@pitboss/core/*": ["packages/core/src/*"],
       "@pitboss/db/*": ["packages/db/src/*"]
     }
