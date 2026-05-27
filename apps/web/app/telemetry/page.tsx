@@ -1,82 +1,82 @@
 "use client";
 
-import { useState } from "react";
-import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { useState, useEffect } from "react";
+import { supabase } from "@/lib/supabaseClient";
+import { useRouter } from "next/navigation";
+import { useAuth } from "@/hooks/useAuth";
 
-export default function TelemetryPage() {
-  const [file, setFile] = useState<File | null>(null);
-  const [result, setResult] = useState<any>(null);
-  const [loading, setLoading] = useState(false);
+export default function LoginPage() {
+  const router = useRouter();
+  const { isAuthenticated, loading, session } = useAuth();
 
-  const handleUpload = async () => {
-    if (!file) return;
+  const [email, setEmail] = useState("");
+  const [sent, setSent] = useState(false);
+  const [error, setError] = useState("");
 
-    setLoading(true);
-    setResult(null);
+  // Redirect if already logged in
+  useEffect(() => {
+    if (!loading && isAuthenticated && session) {
+      router.replace("/dashboard");
+    }
+  }, [loading, isAuthenticated, session, router]);
 
-    const formData = new FormData();
-    formData.append("file", file);
+  async function login() {
+    setError("");
 
-    const res = await fetch("http://localhost:4000/telemetry/upload", {
-      method: "POST",
-      body: formData,
+    if (!email.includes("@")) {
+      setError("Please enter a valid email.");
+      return;
+    }
+
+    const { error } = await supabase.auth.signInWithOtp({
+      email,
+      options: {
+        emailRedirectTo: `${window.location.origin}/dashboard`,
+      },
     });
 
-    const data = await res.json();
-    setResult(data);
-    setLoading(false);
-  };
+    if (error) {
+      setError(error.message);
+      return;
+    }
+
+    setSent(true);
+  }
+
+  if (loading) {
+    return <p className="text-center mt-10">Loading...</p>;
+  }
 
   return (
-    <div className="space-y-6">
-      <h1 className="text-3xl font-bold">Telemetry Analysis</h1>
+    <div className="p-8 max-w-md mx-auto space-y-6">
+      <h1 className="text-3xl font-bold">Login</h1>
 
-      <Card className="p-6 bg-neutral-900 border-neutral-700 space-y-4">
-        <input
-          type="file"
-          accept=".csv,.json"
-          onChange={(e) => setFile(e.target.files?.[0] || null)}
-          className="text-white"
-        />
+      {sent ? (
+        <p className="text-green-400">
+          Magic link sent! Check your email to continue.
+        </p>
+      ) : (
+        <>
+          <input
+            className="bg-neutral-900 border border-neutral-700 p-3 rounded w-full text-white"
+            placeholder="Enter your email..."
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+          />
 
-        <Button onClick={handleUpload} disabled={loading || !file}>
-          {loading ? "Analyzing..." : "Upload Telemetry"}
-        </Button>
-      </Card>
-
-      {result && (
-        <Card className="p-6 bg-neutral-900 border-neutral-700 space-y-4">
-          <h2 className="text-xl font-semibold">Analysis Results</h2>
-
-          {result.summary && (
-            <p className="whitespace-pre-line">{result.summary}</p>
+          {error && (
+            <p className="text-red-400 text-sm">{error}</p>
           )}
 
-          {result.metrics && (
-            <>
-              <h3 className="font-semibold mt-4">Metrics</h3>
-              <ul className="list-disc ml-6">
-                {Object.entries(result.metrics).map(([key, value]) => (
-                  <li key={key}>
-                    {key}: {value}
-                  </li>
-                ))}
-              </ul>
-            </>
-          )}
-
-          {result.recommendations && (
-            <>
-              <h3 className="font-semibold mt-4">Recommendations</h3>
-              <ul className="list-disc ml-6">
-                {result.recommendations.map((rec: string, i: number) => (
-                  <li key={i}>{rec}</li>
-                ))}
-              </ul>
-            </>
-          )}
-        </Card>
+          <button
+            onClick={login}
+            disabled={loading || !email}
+            className="bg-blue-600 hover:bg-blue-500 px-4 py-2 rounded w-full transition disabled:opacity-40"
+          >
+            Send Magic Link
+          </button>
+        </>
       )}
     </div>
   );
