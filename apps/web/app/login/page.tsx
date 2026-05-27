@@ -7,7 +7,7 @@ import { useAuth } from "@/hooks/useAuth";
 
 export default function LoginPage() {
   const router = useRouter();
-  const { isAuthenticated, loading } = useAuth();
+  const { isAuthenticated, loading, session } = useAuth();
 
   const [email, setEmail] = useState("");
   const [sent, setSent] = useState(false);
@@ -15,13 +15,18 @@ export default function LoginPage() {
 
   // Redirect if already logged in
   useEffect(() => {
-    if (!loading && isAuthenticated) {
+    if (!loading && isAuthenticated && session) {
       router.replace("/dashboard");
     }
-  }, [loading, isAuthenticated, router]);
+  }, [loading, isAuthenticated, session, router]);
 
   async function login() {
     setError("");
+
+    if (!email.includes("@")) {
+      setError("Please enter a valid email.");
+      return;
+    }
 
     const { error } = await supabase.auth.signInWithOtp({
       email,
@@ -66,7 +71,8 @@ export default function LoginPage() {
 
           <button
             onClick={login}
-            className="bg-blue-600 hover:bg-blue-500 px-4 py-2 rounded w-full transition"
+            disabled={loading || !email}
+            className="bg-blue-600 hover:bg-blue-500 px-4 py-2 rounded w-full transition disabled:opacity-40"
           >
             Send Magic Link
           </button>
