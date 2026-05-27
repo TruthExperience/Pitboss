@@ -1,12 +1,24 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabaseClient";
+import { useRouter } from "next/navigation";
+import { useAuth } from "@/hooks/useAuth";
 
 export default function LoginPage() {
+  const router = useRouter();
+  const { isAuthenticated, loading } = useAuth();
+
   const [email, setEmail] = useState("");
   const [sent, setSent] = useState(false);
   const [error, setError] = useState("");
+
+  // Redirect if already logged in
+  useEffect(() => {
+    if (!loading && isAuthenticated) {
+      router.replace("/dashboard");
+    }
+  }, [loading, isAuthenticated, router]);
 
   async function login() {
     setError("");
@@ -14,8 +26,8 @@ export default function LoginPage() {
     const { error } = await supabase.auth.signInWithOtp({
       email,
       options: {
-        emailRedirectTo: `${window.location.origin}/dashboard`
-      }
+        emailRedirectTo: `${window.location.origin}/dashboard`,
+      },
     });
 
     if (error) {
@@ -24,6 +36,10 @@ export default function LoginPage() {
     }
 
     setSent(true);
+  }
+
+  if (loading) {
+    return <p className="text-center mt-10">Loading...</p>;
   }
 
   return (
