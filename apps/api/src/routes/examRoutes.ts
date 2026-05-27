@@ -1,22 +1,52 @@
-import { Router } from "express";
-import { processExam } from "@engines/exam/examEngine";
+import { NextResponse } from "next/server";
+import { supabase } from "@/lib/supabaseClient";
 
-const router = Router();
-
-router.post("/submit", async (req, res) => {
+export async function POST(req: Request) {
   try {
-    const { questions, submission } = req.body;
+    const { user_id, answers } = await req.json();
 
-    if (!questions || !submission) {
-      return res.status(400).json({ error: "Missing exam data" });
+    if (!user_id || !answers) {
+      return NextResponse.json(
+        { error: "Missing user_id or answers" },
+        { status: 400 }
+      );
     }
 
-    const result = await processExam(questions, submission);
-    return res.json(result);
-  } catch (err) {
-    console.error("Exam processing error:", err);
-    return res.status(500).json({ error: "Internal server error" });
-  }
-});
+    // Fetch all questions
+    const { data: questions, error } = await supabase
+      .from("exam_questions")
+      .select("*");
 
-export default router;
+    if (error || !questions) {
+      return NextResponse.json(
+        { error: "Failed to load questions" },
+        { status: 500 }
+      );
+    }
+
+    // Grade exam
+    let correct = 0;
+    let total = questions.length;
+
+    for (const q of questions) {
+      if (answers[q.id] === q.answer) {
+        correct++;
+      }
+    }
+
+    const score = Math.round((correct / total) * 100);
+    const passed = score >= 80;
+
+    return NextResponse.json({
+      score,
+      passed,
+      correct,
+      incorrect: total - correct
+    });
+  } catch (err) {
+    return NextResponse.json(
+      { error: "Server error", details: String(err) },
+      { status: 500 }
+    );
+  }
+}
