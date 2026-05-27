@@ -1,8 +1,16 @@
 "use client";
 
 import Link from "next/link";
+import { useAuth } from "@/providers/AuthProvider";
+import { redirect } from "next/navigation";
 
 export default function AdminHome() {
+  const { user } = useAuth();
+
+  if (!user || user.role !== "admin") {
+    redirect("/");
+  }
+
   return (
     <div className="space-y-8 p-8">
       <h1 className="text-3xl font-bold">PitBossOS Admin Panel</h1>
