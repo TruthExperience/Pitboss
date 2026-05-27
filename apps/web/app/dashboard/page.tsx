@@ -9,26 +9,38 @@ export default function DashboardPage() {
   const { session, loading: authLoading, isAuthenticated } = useAuth();
 
   const [driver, setDriver] = useState<any>(null);
+  const [profile, setProfile] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (!session) return;
 
     async function loadDriver() {
-      const { data, error } = await supabase
+      // Step 1: get driver row by auth_id
+      const { data: driverRow } = await supabase
         .from("drivers")
         .select("*")
         .eq("auth_id", session.user.id)
         .single();
 
-      if (!error) setDriver(data);
+      if (!driverRow) {
+        setLoading(false);
+        return;
+      }
+
+      setDriver(driverRow);
+
+      // Step 2: load full profile from API
+      const res = await fetch(`http://localhost:4000/drivers/${driverRow.id}`);
+      const full = await res.json();
+
+      setProfile(full);
       setLoading(false);
     }
 
     loadDriver();
   }, [session]);
 
-  // Auth still loading
   if (authLoading) {
     return (
       <div className="p-8 text-center">
@@ -37,7 +49,6 @@ export default function DashboardPage() {
     );
   }
 
-  // Not logged in
   if (!isAuthenticated) {
     return (
       <div className="p-8 text-center">
@@ -46,7 +57,6 @@ export default function DashboardPage() {
     );
   }
 
-  // Driver loading
   if (loading) {
     return (
       <div className="p-8 text-center">
@@ -55,6 +65,16 @@ export default function DashboardPage() {
     );
   }
 
+  if (!profile) {
+    return (
+      <div className="p-8 text-center">
+        <p className="text-red-400">No driver profile found. Contact an admin.</p>
+      </div>
+    );
+  }
+
+  const { activity } = profile;
+
   return (
     <>
       <Nav />
@@ -62,49 +82,48 @@ export default function DashboardPage() {
       <div className="p-8 space-y-8">
         <h1 className="text-4xl font-bold">Dashboard</h1>
 
-        {!driver ? (
-          <p className="text-red-400">
-            No driver profile found. Contact an admin.
+        <div className="bg-neutral-900 border border-neutral-700 p-6 rounded space-y-2">
+          <h2 className="text-2xl font-semibold mb-2">
+            Welcome, {driver.name}
+          </h2>
+
+          <p className="text-neutral-400">
+            License Level:{" "}
+            <span className="text-white font-semibold">
+              {driver.license_level}
+            </span>
           </p>
-        ) : (
-          <div className="space-y-6">
-            <div className="bg-neutral-900 border border-neutral-700 p-6 rounded">
-              <h2 className="text-2xl font-semibold mb-2">
-                Welcome, {driver.name}
-              </h2>
 
-              <p className="text-neutral-400">
-                License Level:{" "}
-                <span className="text-white font-semibold">
-                  {driver.license_level}
-                </span>
-              </p>
+          <p className="text-neutral-400">
+            Exams Passed:{" "}
+            <span className="text-white font-semibold">
+              {driver.exams_passed}
+            </span>
+          </p>
 
-              <p className="text-neutral-400">
-                Exams Passed:{" "}
-                <span className="text-white font-semibold">
-                  {driver.exams_passed}
-                </span>
-              </p>
+          <p className="text-neutral-400">
+            Advisor Score:{" "}
+            <span className="text-white font-semibold">
+              {driver.advisor_score}
+            </span>
+          </p>
 
-              <p className="text-neutral-400">
-                Advisor Score:{" "}
-                <span className="text-white font-semibold">
-                  {driver.advisor_score}
-                </span>
-              </p>
-            </div>
+          <p className="text-neutral-400">
+            Telemetry Uploads:{" "}
+            <span className="text-white font-semibold">
+              {activity?.telemetry_uploads ?? 0}
+            </span>
+          </p>
+        </div>
 
-            <div className="bg-neutral-900 border border-neutral-700 p-6 rounded">
-              <h2 className="text-xl font-semibold mb-3">Next Steps</h2>
-              <ul className="list-disc ml-6 text-neutral-300 space-y-2">
-                <li>Take your next certification exam</li>
-                <li>Run telemetry to improve your driving</li>
-                <li>Use the Advisor to get personalized coaching</li>
-              </ul>
-            </div>
-          </div>
-        )}
+        <div className="bg-neutral-900 border border-neutral-700 p-6 rounded">
+          <h2 className="text-xl font-semibold mb-3">Next Steps</h2>
+          <ul className="list-disc ml-6 text-neutral-300 space-y-2">
+            <li>Take your next certification exam</li>
+            <li>Run telemetry to improve your driving</li>
+            <li>Use the Advisor to get personalized coaching</li>
+          </ul>
+        </div>
       </div>
     </>
   );
