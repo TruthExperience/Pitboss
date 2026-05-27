@@ -9,8 +9,10 @@ export default function ProfilePage() {
   const { session, loading: authLoading, isAuthenticated } = useAuth();
 
   const [driver, setDriver] = useState<any>(null);
+  const [profile, setProfile] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
 
   const [name, setName] = useState("");
   const [bio, setBio] = useState("");
@@ -19,18 +21,27 @@ export default function ProfilePage() {
     if (!session) return;
 
     async function loadDriver() {
-      const { data, error } = await supabase
+      // Step 1: get driver row by auth_id
+      const { data: driverRow } = await supabase
         .from("drivers")
         .select("*")
         .eq("auth_id", session.user.id)
         .single();
 
-      if (!error && data) {
-        setDriver(data);
-        setName(data.name || "");
-        setBio(data.bio || "");
+      if (!driverRow) {
+        setLoading(false);
+        return;
       }
 
+      setDriver(driverRow);
+      setName(driverRow.name || "");
+      setBio(driverRow.bio || "");
+
+      // Step 2: load full profile from API
+      const res = await fetch(`http://localhost:4000/drivers/${driverRow.id}`);
+      const full = await res.json();
+
+      setProfile(full);
       setLoading(false);
     }
 
@@ -41,19 +52,18 @@ export default function ProfilePage() {
     if (!driver) return;
 
     setSaving(true);
+    setSaved(false);
 
-    await supabase
-      .from("drivers")
-      .update({
-        name,
-        bio,
-      })
-      .eq("id", driver.id);
+    await fetch(`http://localhost:4000/drivers/${driver.id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name, bio }),
+    });
 
     setSaving(false);
+    setSaved(true);
   }
 
-  // Auth still loading
   if (authLoading) {
     return (
       <div className="p-8 text-center">
@@ -62,7 +72,6 @@ export default function ProfilePage() {
     );
   }
 
-  // Not logged in
   if (!isAuthenticated) {
     return (
       <div className="p-8 text-center">
@@ -71,7 +80,6 @@ export default function ProfilePage() {
     );
   }
 
-  // Driver loading
   if (loading) {
     return (
       <div className="p-8 text-center">
@@ -119,6 +127,12 @@ export default function ProfilePage() {
               >
                 {saving ? "Saving..." : "Save Changes"}
               </button>
+
+              {saved && (
+                <p className="text-green-400 text-sm mt-2">
+                  Profile updated successfully.
+                </p>
+              )}
             </div>
 
             <div className="bg-neutral-900 border border-neutral-700 p-6 rounded">
