@@ -1,5 +1,5 @@
 {
-  "name": "@db",
+  "name": "@pitboss/db",
   "version": "1.0.0",
-  "main": "src/client.ts"
+  "main": "src/index.ts"
 }
