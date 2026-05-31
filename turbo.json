@@ -11,6 +11,12 @@
         "NEXT_PUBLIC_API_URL"
       ],
       "outputs": [".next/**", "dist/**"]
+    },
+    "dev": {
+      "dependsOn": ["^dev"]
+    },
+    "lint": {
+      "dependsOn": ["^lint"]
     }
   },
   "globalPassThroughEnv": [
