@@ -1,15 +1,12 @@
 {
-  "name": "pitbossos",
   "private": true,
-  "version": "1.0.0",
-  "packageManager": "yarn@1.22.19",
   "workspaces": [
     "apps/*",
     "packages/*"
   ],
   "scripts": {
-    "dev": "turbo run dev",
     "build": "turbo run build",
+    "dev": "turbo run dev",
     "lint": "turbo run lint"
   }
 }
