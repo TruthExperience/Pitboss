@@ -1,26 +1,34 @@
 import express from "express";
 import cors from "cors";
+
 import healthRoutes from "./routes/healthRoutes";
-
-const app = express();
-
-app.use(cors());
-app.use(express.json());
-
-// Health route (must be near the top)
-app.use("/", healthRoutes);
-
-// Other API routes
 import examRoutes from "./routes/examRoutes";
 import advisorRoutes from "./routes/advisorRoutes";
 import telemetryRoutes from "./routes/telemetryRoutes";
 
+const app = express();
+
+const PORT = Number(process.env.PORT) || 4000;
+
+app.use(cors());
+app.use(express.json());
+
+// Health route
+app.use("/", healthRoutes);
+
+// API routes
 app.use("/exam", examRoutes);
 app.use("/advisor", advisorRoutes);
 app.use("/telemetry", telemetryRoutes);
 
-// Start server
-const PORT = 4000;
+// 404 handler
+app.use((req, res) => {
+  res.status(404).json({
+    success: false,
+    error: `Route not found: ${req.method} ${req.originalUrl}`,
+  });
+});
+
 app.listen(PORT, () => {
-  console.log(`PitBoss API running on http://localhost:${PORT}`);
+  console.log(`PitBoss API running on port ${PORT}`);
 });
