@@ -1,18 +1,12 @@
 {
-  "compilerOptions": {
-    "target": "ES2020",
-    "module": "ESNext",
-    "moduleResolution": "bundler",
-    "strict": true,
-    "esModuleInterop": true,
-    "skipLibCheck": true,
-    "forceConsistentCasingInFileNames": true,
-
-    "baseUrl": ".",
-    "paths": {
-      "@/*": ["apps/web/*"],
-      "@pitboss/core/*": ["packages/core/src/*"],
-      "@pitboss/db/*": ["packages/db/src/*"]
-    }
-  }
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "display": "PitBoss Root",
+  "files": [],
+  "references": [
+    { "path": "./apps/pitboss-admin" },
+    { "path": "./apps/pitboss-portal" },
+    { "path": "./packages/core-domain" },
+    { "path": "./packages/shared-utils" },
+    { "path": "./packages/ui" }
+  ]
 }
