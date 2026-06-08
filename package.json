@@ -31,7 +31,7 @@
     "docker:logs": "docker-compose -f infra/docker-compose.yml logs -f",
     "deploy:portal": "vercel --cwd apps/pitboss-portal --prod",
     "deploy:portal:preview": "vercel --cwd apps/pitboss-portal",
-    "prepare": "husky install"
+    "prepare": "husky"
   },
   "devDependencies": {
     "turbo": "^2.3.3",
