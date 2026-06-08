@@ -1,58 +1,48 @@
 {
-  "name": "pitboss",
-  "version": "0.1.0",
-  "private": true,
-  "description": "PitBoss — AI-driven league operations system (TOPS child OS) for WSC/SRH/TRL",
-  "workspaces": [
-    "apps/*",
-    "packages/*",
-    "services/*"
-  ],
-  "scripts": {
-    "build": "turbo run build",
-    "dev": "turbo run dev",
-    "dev:admin": "turbo run dev --filter=pitboss-admin",
-    "dev:api": "turbo run dev --filter=pitboss-api",
-    "dev:portal": "turbo run dev --filter=pitboss-portal",
-    "lint": "turbo run lint",
-    "lint:fix": "turbo run lint:fix",
-    "test": "turbo run test",
-    "test:api": "cd tests && python -m pytest backend_test.py -v",
-    "test:regression": "cd tests && python -m pytest regression_test.py -v",
-    "clean": "turbo run clean && rm -rf node_modules",
-    "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\"",
-    "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,json,md}\"",
-    "typecheck": "turbo run typecheck",
-    "db:migrate": "supabase db push",
-    "db:reset": "supabase db reset",
-    "db:types": "supabase gen types typescript --local > packages/core-domain/src/supabase.types.ts",
-    "docker:dev": "docker-compose -f infra/docker-compose.yml up -d",
-    "docker:down": "docker-compose -f infra/docker-compose.yml down",
-    "docker:logs": "docker-compose -f infra/docker-compose.yml logs -f",
-    "prepare": "husky install"
+  "$schema": "https://turborepo.com/schema.json",
+  "tasks": {
+    "build": {
+      "dependsOn": ["^build"],
+      "env": [
+        "DATABASE_URL",
+        "NEXT_PUBLIC_SUPABASE_URL",
+        "NEXT_PUBLIC_SUPABASE_ANON_KEY",
+        "SUPABASE_SERVICE_ROLE_KEY",
+        "NEXT_PUBLIC_API_URL",
+        "MONGO_URL",
+        "DB_NAME"
+      ],
+      "outputs": [".next/**", "dist/**"]
+    },
+    "dev": {
+      "cache": false,
+      "persistent": true
+    },
+    "lint": {
+      "dependsOn": ["^lint"]
+    },
+    "lint:fix": {
+      "dependsOn": ["^lint:fix"]
+    },
+    "test": {
+      "dependsOn": ["^build"]
+    },
+    "typecheck": {
+      "dependsOn": ["^build"]
+    }
   },
-  "devDependencies": {
-    "turbo": "^2.3.3",
-    "typescript": "^5.7.2",
-    "prettier": "^3.4.2",
-    "husky": "^9.1.7",
-    "lint-staged": "^15.3.0",
-    "@typescript-eslint/eslint-plugin": "^8.19.1",
-    "@typescript-eslint/parser": "^8.19.1",
-    "eslint": "^9.17.0"
-  },
-  "lint-staged": {
-    "*.{ts,tsx,js,jsx}": [
-      "eslint --fix",
-      "prettier --write"
-    ],
-    "*.{json,md,yml,yaml}": [
-      "prettier --write"
-    ]
-  },
-  "engines": {
-    "node": ">=20.0.0",
-    "pnpm": ">=9.0.0"
-  },
-  "packageManager": "pnpm@9.15.0"
+  "globalPassThroughEnv": [
+    "DATABASE_URL",
+    "SUPABASE_SERVICE_ROLE_KEY",
+    "NEXT_PUBLIC_SUPABASE_URL",
+    "NEXT_PUBLIC_SUPABASE_ANON_KEY",
+    "NEXT_PUBLIC_API_URL",
+    "MONGO_URL",
+    "DB_NAME",
+    "JWT_SECRET",
+    "DISCORD_CLIENT_ID",
+    "DISCORD_CLIENT_SECRET",
+    "DISCORD_BOT_TOKEN",
+    "EMERGENT_LLM_KEY"
+  ]
 }
