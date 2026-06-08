@@ -1,15 +1,14 @@
 {
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "display": "PitBoss Core Domain",
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
-    "rootDir": "./src",
-    "outDir": "./dist",
-    "module": "commonjs",
-    "target": "es2020",
-    "moduleResolution": "node",
-    "strict": true,
-    "declaration": true,
-    "composite": true,
-    "skipLibCheck": true
+    "lib": ["ES2020"],
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "outDir": "dist",
+    "rootDir": "src"
   },
-  "include": ["src"]
+  "include": ["src"],
+  "exclude": ["node_modules", "dist"]
 }
