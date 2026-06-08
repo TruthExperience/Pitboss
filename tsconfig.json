@@ -3,7 +3,7 @@
   "display": "PitBoss Root",
   "files": [],
   "references": [
-    { "path": "./apps/pitboss-admin" },
+    { "path": "./apps/web" },
     { "path": "./apps/pitboss-portal" },
     { "path": "./packages/core-domain" },
     { "path": "./packages/shared-utils" },
