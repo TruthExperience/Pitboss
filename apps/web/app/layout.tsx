@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 
 import AuthProvider from "@/components/AuthProvider";
 import HeartbeatIndicator from "@/components/HeartbeatIndicator";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 
 export const metadata = {
   title: "PitBossOS",
@@ -17,6 +18,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
           {children}
           <HeartbeatIndicator />
         </AuthProvider>
+        <SpeedInsights />
 
         {/* Register Service Worker */}
         <script
