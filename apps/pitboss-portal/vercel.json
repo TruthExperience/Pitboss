@@ -4,7 +4,7 @@
   "name": "pitboss-portal",
   "buildCommand": null,
   "outputDirectory": ".",
-  "installCommand": "echo 'skip'",
+  "installCommand": "pnpm install",
   "framework": null,
   "rewrites": [
     {
