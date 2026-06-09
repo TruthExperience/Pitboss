@@ -1,8 +1,24 @@
 {
-  "extends": "../../tsconfig.json",
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "display": "PitBoss Admin (Next.js)",
+  "extends": "../../tsconfig.base.json",
   "compilerOptions": {
     "jsx": "preserve",
-    "moduleResolution": "bundler"
+    "allowJs": true,
+    "outDir": ".next/types",
+    "paths": {
+      "@/*": ["./src/*"],
+      "@pitboss/core-domain": ["../../packages/core-domain/src/index.ts"],
+      "@pitboss/shared-utils": ["../../packages/shared-utils/src/index.ts"],
+      "@pitboss/ui": ["../../packages/ui/src/index.ts"],
+      "@pitboss/db": ["../../packages/db/src/index.ts"]
+    }
   },
-  "include": ["app/**/*"]
+  "include": [
+    "next-env.d.ts",
+    "**/*.ts",
+    "**/*.tsx",
+    ".next/types/**/*.ts"
+  ],
+  "exclude": ["node_modules"]
 }
