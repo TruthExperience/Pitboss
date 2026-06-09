@@ -1,68 +1,109 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { supabase } from "@/lib/supabaseClient";
-import { useRouter } from "next/navigation";
+import { useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
+import Nav from "@/components/Nav";
 
-export default function LoginPage() {
-  const router = useRouter();
-  const { isAuthenticated, loading, session } = useAuth();
+interface TelemetryMetrics {
+  bestLap?: number;
+  avgLap?: number;
+  consistency?: number;
+  topSpeed?: number;
+  totalLaps?: number;
+}
 
-  const [email, setEmail] = useState("");
-  const [sent, setSent] = useState(false);
+interface TelemetryResult {
+  summary: string;
+  metrics: TelemetryMetrics;
+  insights: string[];
+  analyzedAt: string;
+}
+
+export default function TelemetryPage() {
+  const { session, isAuthenticated, loading: authLoading } = useAuth();
+
+  const [file, setFile] = useState<File | null>(null);
+  const [uploading, setUploading] = useState(false);
+  const [result, setResult] = useState<TelemetryResult | null>(null);
   const [error, setError] = useState("");
 
-  // Redirect if already logged in
-  useEffect(() => {
-    if (!loading && isAuthenticated && session) {
-      router.replace("/dashboard");
-    }
-  }, [loading, isAuthenticated, session, router]);
+  async function uploadTelemetry() {
+    if (!file || !session) return;
 
-  async function login() {
+    setUploading(true);
     setError("");
+    setResult(null);
 
-    if (!email.includes("@")) {
-      setError("Please enter a valid email.");
-      return;
+    try {
+      const text = await file.text();
+      const session_data = JSON.parse(text);
+
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/telemetry/upload`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            driver_id: session.user.id,
+            session: session_data,
+          }),
+        }
+      );
+
+      if (!res.ok) {
+        throw new Error("Failed to upload telemetry");
+      }
+
+      const data = await res.json();
+      setResult(data.data);
+    } catch (err) {
+      console.error("Telemetry upload error:", err);
+      setError(
+        err instanceof Error ? err.message : "Failed to upload telemetry"
+      );
+    } finally {
+      setUploading(false);
     }
-
-    const { error } = await supabase.auth.signInWithOtp({
-      email,
-      options: {
-        emailRedirectTo: `${window.location.origin}/dashboard`,
-      },
-    });
-
-    if (error) {
-      setError(error.message);
-      return;
-    }
-
-    setSent(true);
   }
 
-  if (loading) {
-    return <p className="text-center mt-10">Loading...</p>;
+  if (authLoading) {
+    return (
+      <div className="p-8 text-center">
+        <p className="text-neutral-400">Loading...</p>
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return (
+      <div className="p-8 text-center">
+        <h1 className="text-3xl font-bold">Please log in</h1>
+      </div>
+    );
   }
 
   return (
-    <div className="p-8 max-w-md mx-auto space-y-6">
-      <h1 className="text-3xl font-bold">Login</h1>
+    <>
+      <Nav />
 
-      {sent ? (
-        <p className="text-green-400">
-          Magic link sent! Check your email to continue.
-        </p>
-      ) : (
-        <>
+      <div className="p-8 max-w-2xl mx-auto space-y-8">
+        <h1 className="text-4xl font-bold">Telemetry Upload</h1>
+
+        <div className="bg-neutral-900 border border-neutral-700 p-6 rounded space-y-4">
+          <p className="text-neutral-400">
+            Upload your telemetry JSON file to get AI-powered analysis
+            and insights.
+          </p>
+
           <input
-            className="bg-neutral-900 border border-neutral-700 p-3 rounded w-full text-white"
-            placeholder="Enter your email..."
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            type="file"
+            accept=".json"
+            onChange={(e) => setFile(e.target.files?.[0] ?? null)}
+            className="block w-full text-sm text-neutral-400
+              file:mr-4 file:py-2 file:px-4
+              file:rounded file:border-0
+              file:bg-blue-600 file:text-white
+              hover:file:bg-blue-500 cursor-pointer"
           />
 
           {error && (
@@ -70,14 +111,69 @@ export default function LoginPage() {
           )}
 
           <button
-            onClick={login}
-            disabled={loading || !email}
-            className="bg-blue-600 hover:bg-blue-500 px-4 py-2 rounded w-full transition disabled:opacity-40"
+            onClick={uploadTelemetry}
+            disabled={!file || uploading}
+            className="bg-blue-600 hover:bg-blue-500 px-4 py-2 rounded
+              transition disabled:opacity-40 w-full"
           >
-            Send Magic Link
+            {uploading ? "Analyzing..." : "Upload & Analyze"}
           </button>
-        </>
-      )}
-    </div>
+        </div>
+
+        {result && (
+          <div className="bg-neutral-900 border border-neutral-700 p-6 rounded space-y-6">
+            <h2 className="text-2xl font-semibold">Analysis Results</h2>
+
+            <p className="text-neutral-300">{result.summary}</p>
+
+            <div className="grid grid-cols-2 gap-4">
+              {result.metrics.bestLap && (
+                <div className="bg-neutral-800 p-4 rounded">
+                  <p className="text-neutral-400 text-sm">Best Lap</p>
+                  <p className="text-white font-semibold text-xl">
+                    {result.metrics.bestLap.toFixed(3)}s
+                  </p>
+                </div>
+              )}
+              {result.metrics.avgLap && (
+                <div className="bg-neutral-800 p-4 rounded">
+                  <p className="text-neutral-400 text-sm">Avg Lap</p>
+                  <p className="text-white font-semibold text-xl">
+                    {result.metrics.avgLap.toFixed(3)}s
+                  </p>
+                </div>
+              )}
+              {result.metrics.consistency && (
+                <div className="bg-neutral-800 p-4 rounded">
+                  <p className="text-neutral-400 text-sm">Consistency</p>
+                  <p className="text-white font-semibold text-xl">
+                    {result.metrics.consistency}%
+                  </p>
+                </div>
+              )}
+              {result.metrics.totalLaps && (
+                <div className="bg-neutral-800 p-4 rounded">
+                  <p className="text-neutral-400 text-sm">Total Laps</p>
+                  <p className="text-white font-semibold text-xl">
+                    {result.metrics.totalLaps}
+                  </p>
+                </div>
+              )}
+            </div>
+
+            {result.insights.length > 0 && (
+              <div>
+                <h3 className="text-lg font-semibold mb-2">Insights</h3>
+                <ul className="list-disc ml-6 text-neutral-300 space-y-1">
+                  {result.insights.map((insight, i) => (
+                    <li key={i}>{insight}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+    </>
   );
 }
