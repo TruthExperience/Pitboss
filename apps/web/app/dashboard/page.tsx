@@ -16,7 +16,6 @@ export default function DashboardPage() {
     if (!session) return;
 
     async function loadDriver() {
-      // Step 1: get driver row by auth_id
       const { data: driverRow } = await supabase
         .from("drivers")
         .select("*")
@@ -30,8 +29,9 @@ export default function DashboardPage() {
 
       setDriver(driverRow);
 
-      // Step 2: load full profile from API
-      const res = await fetch(`http://localhost:4000/drivers/${driverRow.id}`);
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/admin/drivers/${driverRow.id}`
+      );
       const full = await res.json();
 
       setProfile(full);
@@ -68,12 +68,14 @@ export default function DashboardPage() {
   if (!profile) {
     return (
       <div className="p-8 text-center">
-        <p className="text-red-400">No driver profile found. Contact an admin.</p>
+        <p className="text-red-400">
+          No driver profile found. Contact an admin.
+        </p>
       </div>
     );
   }
 
-  const { activity } = profile;
+  const { activity } = profile.data;
 
   return (
     <>
