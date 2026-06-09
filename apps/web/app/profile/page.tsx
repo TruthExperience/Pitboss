@@ -21,7 +21,6 @@ export default function ProfilePage() {
     if (!session) return;
 
     async function loadDriver() {
-      // Step 1: get driver row by auth_id
       const { data: driverRow } = await supabase
         .from("drivers")
         .select("*")
@@ -37,8 +36,9 @@ export default function ProfilePage() {
       setName(driverRow.name || "");
       setBio(driverRow.bio || "");
 
-      // Step 2: load full profile from API
-      const res = await fetch(`http://localhost:4000/drivers/${driverRow.id}`);
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/admin/drivers/${driverRow.id}`
+      );
       const full = await res.json();
 
       setProfile(full);
@@ -54,11 +54,14 @@ export default function ProfilePage() {
     setSaving(true);
     setSaved(false);
 
-    await fetch(`http://localhost:4000/drivers/${driver.id}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name, bio }),
-    });
+    await fetch(
+      `${process.env.NEXT_PUBLIC_API_URL}/admin/drivers/${driver.id}`,
+      {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, bio }),
+      }
+    );
 
     setSaving(false);
     setSaved(true);
@@ -136,7 +139,9 @@ export default function ProfilePage() {
             </div>
 
             <div className="bg-neutral-900 border border-neutral-700 p-6 rounded">
-              <h2 className="text-xl font-semibold mb-3">Driver Stats</h2>
+              <h2 className="text-xl font-semibold mb-3">
+                Driver Stats
+              </h2>
               <p className="text-neutral-400">
                 License Level:{" "}
                 <span className="text-white font-semibold">
