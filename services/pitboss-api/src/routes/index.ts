@@ -24,7 +24,7 @@ router.get('/leagues', (_req, res) => {
   const leagues: League[] = [
     {
       id: 'league-wsc',
-      name: 'World Sim Championship',
+      name: 'World Series Championship',
       slug: 'wsc',
       description: 'Premier sim racing league',
       status: 'active',
