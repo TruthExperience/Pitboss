@@ -1,13 +1,1 @@
-{
-  "name": "@pitboss/shared-utils",
-  "version": "1.0.0",
-  "private": true,
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
-  "scripts": {
-    "build": "tsc -p tsconfig.json",
-    "dev": "tsc -p tsconfig.json --watch",
-    "typecheck": "tsc --noEmit",
-    "clean": "rm -rf dist"
-  }
-}
+export * from './logger';
