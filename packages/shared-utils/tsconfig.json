@@ -3,7 +3,7 @@
   "display": "PitBoss Shared Utils",
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
-    "lib": ["ES2020"],
+    "lib": ["ES2020", "DOM"],
     "module": "CommonJS",
     "moduleResolution": "node",
     "outDir": "dist",
