@@ -106,8 +106,7 @@ begin
   where driver_id = new.driver_id;
   return new;
 end;
-```blockmath
- language plpgsql;
+$$ language plpgsql;
 
 create trigger trg_exam_count
 after insert on exam_results
@@ -117,4 +116,16 @@ for each row execute function increment_exam_count();
 -- TRIGGER: ADVISOR COUNT
 -- ================================
 create or replace function increment_advisor_count()
-returns trigger as
+returns trigger as $$
+begin
+  update driver_activity
+  set advisor_sessions = advisor_sessions + 1,
+      updated_at = now()
+  where driver_id = new.driver_id;
+  return new;
+end;
+$$ language plpgsql;
+
+create trigger trg_advisor_count
+after insert on advisor_sessions
+for each row execute function increment_advisor_count();
