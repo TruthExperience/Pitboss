@@ -16,6 +16,8 @@ export default function DashboardPage() {
     if (!session) return;
 
     async function loadDriver() {
+      if (!session) return;
+
       const { data: driverRow } = await supabase
         .from("drivers")
         .select("*")
