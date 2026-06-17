@@ -9,7 +9,6 @@ export default function ProfilePage() {
   const { session, loading: authLoading, isAuthenticated } = useAuth();
 
   const [driver, setDriver] = useState<any>(null);
-  const [profile, setProfile] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
