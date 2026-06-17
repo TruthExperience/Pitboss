@@ -1,4 +1,4 @@
-import { Router, Request, Response, NextFunction } from 'express';
+import { Router, Request, Response } from 'express';
 import type { League, Event, Driver, Session } from '@pitboss/core-domain';
 import { db } from '@pitboss/db/src/client';
 import { processAdvisor } from '@engines/advisor/src/advisorEngine';
@@ -41,6 +41,18 @@ router.get('/leagues', (_req: Request, res: Response) => {
       description: 'Community sim racing league',
       status: 'active',
       tier: 'pro',
+      game: 'iRacing',
+      discordGuildId: '',
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    },
+    {
+      id: 'league-srh',
+      name: 'SRH',
+      slug: 'srh',
+      description: 'SRH racing league',
+      status: 'active',
+      tier: 'semi-pro',
       game: 'iRacing',
       discordGuildId: '',
       createdAt: new Date().toISOString(),
@@ -163,7 +175,14 @@ router.post('/exam/submit', async (req: Request, res: Response) => {
 
     return res.json({
       success: true,
-      data: { score, passed, correct, incorrect: total - correct, weakAreas: [...new Set(weakAreas)], result },
+      data: {
+        score,
+        passed,
+        correct,
+        incorrect: total - correct,
+        weakAreas: [...new Set(weakAreas)],
+        result,
+      },
     });
   } catch (error) {
     if (error instanceof z.ZodError) {
@@ -250,15 +269,21 @@ router.get('/admin/drivers/:id', async (req: Request, res: Response) => {
   try {
     const driverId = driverIdSchema.parse(req.params.id);
 
-    const [driverResult, activityResult, examsResult, advisorResult, telemetryResult, certsResult] =
-      await Promise.all([
-        db.from('drivers').select('*').eq('id', driverId).single(),
-        db.from('driver_activity').select('*').eq('driver_id', driverId).single(),
-        db.from('exam_results').select('*').eq('driver_id', driverId).order('created_at', { ascending: false }),
-        db.from('advisor_sessions').select('*').eq('driver_id', driverId).order('created_at', { ascending: false }),
-        db.from('telemetry_analysis').select('*').eq('driver_id', driverId).order('created_at', { ascending: false }),
-        db.from('driver_certifications').select('*').eq('driver_id', driverId).order('earned_at', { ascending: false }),
-      ]);
+    const [
+      driverResult,
+      activityResult,
+      examsResult,
+      advisorResult,
+      telemetryResult,
+      certsResult,
+    ] = await Promise.all([
+      db.from('drivers').select('*').eq('id', driverId).single(),
+      db.from('driver_activity').select('*').eq('driver_id', driverId).single(),
+      db.from('exam_results').select('*').eq('driver_id', driverId).order('created_at', { ascending: false }),
+      db.from('advisor_sessions').select('*').eq('driver_id', driverId).order('created_at', { ascending: false }),
+      db.from('telemetry_analysis').select('*').eq('driver_id', driverId).order('created_at', { ascending: false }),
+      db.from('driver_certifications').select('*').eq('driver_id', driverId).order('earned_at', { ascending: false }),
+    ]);
 
     if (driverResult.error || !driverResult.data) {
       return res.status(404).json({ success: false, error: 'Driver not found' });
