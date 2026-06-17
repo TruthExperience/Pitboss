@@ -1,7 +1,7 @@
 import "./globals.css";
 import type { ReactNode } from "react";
 
-import AuthProvider from "@/components/AuthProvider";
+import { AuthProvider } from "@/components/AuthProvider";
 import HeartbeatIndicator from "@/components/HeartbeatIndicator";
 
 export const metadata = {
