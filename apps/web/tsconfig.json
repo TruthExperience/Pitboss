@@ -7,12 +7,28 @@
     "allowJs": true,
     "outDir": ".next/types",
     "paths": {
-      "@/*": ["./*"],
-      "@pitboss/core-domain": ["../../packages/core-domain/src/index.ts"],
-      "@pitboss/shared-utils": ["../../packages/shared-utils/src/index.ts"],
-      "@pitboss/ui": ["../../packages/ui/src/index.ts"],
-      "@pitboss/db": ["../../packages/db/src/index.ts"]
-    }
+      "@/*": [
+        "./*"
+      ],
+      "@pitboss/core-domain": [
+        "../../packages/core-domain/src/index.ts"
+      ],
+      "@pitboss/shared-utils": [
+        "../../packages/shared-utils/src/index.ts"
+      ],
+      "@pitboss/ui": [
+        "../../packages/ui/src/index.ts"
+      ],
+      "@pitboss/db": [
+        "../../packages/db/src/index.ts"
+      ]
+    },
+    "noEmit": true,
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ]
   },
   "include": [
     "next-env.d.ts",
@@ -20,6 +36,7 @@
     "**/*.tsx",
     ".next/types/**/*.ts"
   ],
-  "exclude": ["node_modules"]
+  "exclude": [
+    "node_modules"
+  ]
 }
-
