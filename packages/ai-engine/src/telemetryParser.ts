@@ -37,7 +37,6 @@ export interface TelemetryAnalysis {
 export async function processTelemetry(
   session: TelemetrySession
 ): Promise<TelemetryAnalysis> {
-  // Stub — real telemetry processing wired in Phase 6
   const lapTimes = session.lapTimes ?? [];
   const bestLap = lapTimes.length > 0 ? Math.min(...lapTimes) : undefined;
   const avgLap =
@@ -46,15 +45,15 @@ export async function processTelemetry(
       : undefined;
 
   const consistency =
-    bestLap && avgLap
+    bestLap !== undefined && avgLap !== undefined
       ? Math.round((1 - (avgLap - bestLap) / bestLap) * 100)
       : undefined;
 
   const metrics: TelemetryMetrics = {
-    bestLap,
-    avgLap,
-    consistency,
-    topSpeed: session.topSpeed,
+    ...(bestLap !== undefined && { bestLap }),
+    ...(avgLap !== undefined && { avgLap }),
+    ...(consistency !== undefined && { consistency }),
+    ...(session.topSpeed !== undefined && { topSpeed: session.topSpeed }),
     totalLaps: lapTimes.length,
   };
 
@@ -70,7 +69,7 @@ export async function processTelemetry(
     }
   }
 
-  if (session.topSpeed) {
+  if (session.topSpeed !== undefined) {
     insights.push(`Top speed recorded: ${session.topSpeed} km/h.`);
   }
 
