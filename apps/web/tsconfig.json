@@ -7,7 +7,7 @@
     "allowJs": true,
     "outDir": ".next/types",
     "paths": {
-      "@/*": ["./src/*"],
+      "@/*": ["./*"],
       "@pitboss/core-domain": ["../../packages/core-domain/src/index.ts"],
       "@pitboss/shared-utils": ["../../packages/shared-utils/src/index.ts"],
       "@pitboss/ui": ["../../packages/ui/src/index.ts"],
