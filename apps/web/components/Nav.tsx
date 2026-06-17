@@ -7,7 +7,7 @@ import { useAuth } from "@/hooks/useAuth";
 
 export default function Nav() {
   const pathname = usePathname();
-  const { session, isAuthenticated } = useAuth();
+  const { isAuthenticated } = useAuth();
 
   const linkClass = (path: string) =>
     pathname === path
