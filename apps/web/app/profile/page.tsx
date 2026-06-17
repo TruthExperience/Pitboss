@@ -9,7 +9,6 @@ export default function ProfilePage() {
   const { session, loading: authLoading, isAuthenticated } = useAuth();
 
   const [driver, setDriver] = useState<any>(null);
-  const [profile, setProfile] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -21,6 +20,8 @@ export default function ProfilePage() {
     if (!session) return;
 
     async function loadDriver() {
+      if (!session) return;
+
       const { data: driverRow } = await supabase
         .from("drivers")
         .select("*")
@@ -35,13 +36,6 @@ export default function ProfilePage() {
       setDriver(driverRow);
       setName(driverRow.name || "");
       setBio(driverRow.bio || "");
-
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/admin/drivers/${driverRow.id}`
-      );
-      const full = await res.json();
-
-      setProfile(full);
       setLoading(false);
     }
 
