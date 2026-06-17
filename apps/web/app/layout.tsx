@@ -1,6 +1,7 @@
 import "./globals.css";
 import type { ReactNode } from "react";
 
+import { Analytics } from "@vercel/analytics/next";
 import { AuthProvider } from "@/components/AuthProvider";
 import HeartbeatIndicator from "@/components/HeartbeatIndicator";
 
@@ -17,6 +18,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
           {children}
           <HeartbeatIndicator />
         </AuthProvider>
+        <Analytics />
 
         {/* Register Service Worker */}
         <script
