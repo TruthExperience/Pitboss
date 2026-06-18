@@ -1,8 +1,7 @@
 import { Router, Request, Response } from 'express';
 import type { League, Event, Driver, Session } from '@pitboss/core-domain';
 import { db } from '@pitboss/db';
-import { processAdvisor } from '@engines/advisor/src/advisorEngine';
-import { processTelemetry } from '@engines/advisor/src/telemetryParser';
+import { processAdvisor, processTelemetry } from '@engines/advisor
 import { z } from 'zod';
 
 export const router: Router = Router();
