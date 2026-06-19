@@ -5,9 +5,23 @@ import { router } from './routes';
 const app = express();
 const PORT = Number(process.env.PORT) ?? 4000;
 
+const allowedOrigins = [
+  'http://localhost:3000',
+  'http://localhost:3001',
+  'https://pitboss-beryl.vercel.app',
+  'https://pitboss1.vercel.app',
+  process.env.FRONTEND_URL,
+].filter(Boolean) as string[];
+
 app.use(
   cors({
-    origin: process.env.CORS_ORIGIN?.split(',') ?? '*',
+    origin: (origin, callback) => {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error(`CORS blocked: ${origin}`));
+      }
+    },
     credentials: true,
   })
 );
